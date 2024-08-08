@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://player.live-video.net/1.30.0/amazon-ivs-player.min.js"></script>
+    <title>{{pageTitle}}</title>
+    <style>
+      * {
+        box-sizing: border-box !important;
+      }
+
+      /* width */
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      /* Track */
+      ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+      }
+
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: var(--tti-light-grey);
+        border-radius: 5px;
+      }
+
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--tti-dark-grey);
+      }
+
+      header {
+        position: static !important;
+      }
+
+      .ext-title,
+      .comments-top {
+        color: #fff;
+        background: var(--tti-dark-grey);
+        padding: 8px 10px 4px;
+        font-size: 1rem;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-family: "Trade Gothic LT Pro";
+        font-weight: bold;
+      }
+
+      .resizer-x {
+        margin: 0 7px;
+        width: 4px;
+        background-color: #ccc;
+        cursor: col-resize;
+        border-left: 1px solid var(--tti-dark-grey);
+        border-right: 1px solid var(--tti-dark-grey);
+      }
+
+      .resizer-x:hover {
+        background-color: #999;
+      }
+
+      .resizable-handle {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 20px;
+        height: 20px;
+        background-color: rgba(0, 0, 0, 0.2);
+        cursor: nwse-resize;
+      }
+
+      .content {
+        margin: 40px 0 20px;
+      }
+
+      .content-holder {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .right {
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      div[nova-extension="slideshow"],
+      div[nova-extension="livestreaming"] {
+        border: 1px solid var(--tti-light-grey);
+      }
+
+      .left {
+        width: 58%;
+        top: 0;
+        text-align: center;
+      }
+
+      .question-list {
+        padding: 10px 10px 20px;
+        height: 130px;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+      }
+      .right-ext {
+        position: absolute;
+        right: 20px;
+        top: 0;
+        width: calc(40% - 16px);
+        border: 1px solid var(--tti-light-grey);
+      }
+
+      .r-bottom {
+        display: none;
+        margin-top: auto;
+        background: #fff;
+        border: 1px solid var(--tti-light-grey);
+      }
+
+      #swap {
+        position: absolute;
+        right: 23.7%;
+        top: -40px;
+        cursor: pointer;
+        width: 44px;
+        height: 44px;
+        z-index: 1000;
+        display: none;
+      }
+
+      #verticalSwapArrowHolder {
+        display: none;
+      }
+
+      form#submission-box {
+        padding: 10px;
+      }
+
+      .input-box {
+        position: relative;
+        border: 1px solid var(--tti-light-grey);
+        border-radius: 7px;
+      }
+
+      .swap {
+        width: 20px;
+        height: auto;
+        cursor: pointer;
+        filter: invert();
+      }
+
+      input#msg-box {
+        padding: 5px;
+        border-radius: 5px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border: 1px solid var(--tti-light-grey);
+        border-right: none;
+      }
+
+      button#submit {
+        border-radius: 5px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border: solid 1px var(--tti-light-grey);
+      }
+
+      .question .value {
+        font-family: "Trade Gothic LT Pro";
+      }
+
+      .slideshow-only-left .left {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .slideshow-only-left .right {
+        display: none;
+      }
+
+      .slideshow-only-right .right {
+        width: 100%;
+        position: static;
+      }
+
+      .slideshow-only-right .left {
+        display: none;
+      }
+
+      .slideshow-only-left .bottom,
+      .slideshow-only-right .bottom {
+        display: none;
+      }
+
+      .slideshow-only-left .ext-title,
+      .slideshow-only-right .ext-title {
+        display: none;
+      }
+
+      .slideshow-only-left .resizer-x,
+      .slideshow-only-right .resizer-x {
+        display: none;
+      }
+      video {
+        width: 100%;
+        display: block;
+      }
+      #r-top {
+        padding-bottom: 65%;
+      }
+      #slides {
+        position: relative;
+        /* min-height: 330px; */
+      }
+      .slide {
+        width: 100%;
+        display: none;
+      }
+      .show {
+        display: block !important;
+      }
+      .hide {
+        display: none !important;
+      }
+
+      footer {
+        margin-top: auto;
+      }
+
+      /* Add this to your CSS file */
+      .stream-box {
+        position: relative;
+      }
+      #stream-info {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: none;
+      }
+      .loading-icon {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        left: 0;
+        top: 0;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+      }
+
+      .spinner:after {
+        content: " ";
+        display: block;
+        width: 25px;
+        height: 25px;
+        margin: 0px;
+        border-radius: 50%;
+        border: 4px solid #3498db;
+        border-color: #dbe8f0 transparent #d4dfe6 transparent;
+        animation: spinner 1.2s linear infinite;
+      }
+
+      @keyframes spinner {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      form#submission-box {
+        padding: 10px;
+      }
+
+      .input-box {
+        position: relative;
+        border: 1px solid var(--tti-light-grey);
+        border-radius: 7px;
+      }
+      textarea#msg-box {
+        height: 70px;
+        width: 100%;
+        resize: none;
+        padding: 5px 7px;
+        font-family: "Barlow";
+        border: none;
+        border-radius: 7px;
+      }
+      .response-wrapper {
+        padding: 5px 0;
+      }
+      .response-wrapper > div {
+        display: none;
+        font-size: 0.89rem;
+      }
+      .response {
+        color: rgb(50, 141, 50);
+      }
+      .response-err {
+        color: rgb(167, 48, 48);
+      }
+      input#msg-box {
+        padding: 5px;
+        border-radius: 5px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: none;
+      }
+
+      button#submit {
+        border: none;
+        background: transparent;
+        color: var(--tti-blue);
+        font-family: "Barlow";
+        font-weight: bold;
+        cursor: pointer;
+        display: block;
+        margin-left: auto;
+        padding: 0 10px 10px;
+      }
+
+      @media (max-width: 840px) {
+        #header {
+          position: static !important;
+        }
+
+        .content {
+          margin-top: 20px;
+        }
+        .content-holder {
+          flex-direction: column;
+        }
+        .left {
+          order: 1;
+        }
+        .right-ext {
+          order: 2;
+        }
+        .right {
+          order: 3;
+        }
+
+        .resizer-x,
+        #r-top {
+          display: none;
+        }
+
+        .right,
+        .right-ext {
+          width: 100%;
+          position: static;
+          margin-top: 20px;
+        }
+
+        .left {
+          width: 100%;
+          position: static;
+          margin-top: 5px;
+        }
+
+        .bottom {
+          width: 100%;
+          position: static;
+          margin-top: 5px;
+        }
+
+        #swap {
+          display: none;
+        }
+
+        #vertical-swap {
+          cursor: pointer;
+          width: 50px;
+          height: 50px;
+          cursor: pointer;
+          transform: rotate(90deg);
+        }
+
+        #verticalSwapArrowHolder {
+          display: none;
+          align-items: center;
+          justify-content: center;
+          margin: 5px;
+        }
+
+        footer {
+          position: static;
+          margin-top: 80px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .content {
+          padding: 0 !important;
+        }
+
+        .container {
+          padding: 0 10px !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      class="background"
+      style="
+        background: url(https://static.novaweb.live/146a2c5e-0b02-4e17-baef-647db231f052/3cb364c8-5de2-4e91-aa9c-169ad2c6a0cf/events/image/webcast-bg.jpeg)
+          repeat center center;
+        background-size: cover;
+      "
+    ></div>
+
+    <div class="page">
+      <header id="header">
+        <nav class="top">
+          <div class="container">
+            <div class="stock-quote">
+              <iframe
+                id="irasia-stock-iframe"
+                marginheight="0"
+                src="https://api.irasia.com/stock/sehk/669/quote/en/home-top-new.html"
+                marginwidth="0"
+                scrolling="no"
+                allowtransparency="true"
+                frameborder="0"
+                class="w-50"
+              ></iframe>
+            </div>
+            <div class="options">
+              Click to view
+              <a href="https://www.ttigroup.com" target="_blank">
+                ttigroup.com</a
+              >
+            </div>
+          </div>
+        </nav>
+        <nav class="main">
+          <div class="container">
+            <a nova-href="main"
+              ><img
+                src="https://static.novaweb.live/146a2c5e-0b02-4e17-baef-647db231f052/3cb364c8-5de2-4e91-aa9c-169ad2c6a0cf/events/image/logo.png"
+                alt="Techtronic Industries Co. Ltd."
+            /></a>
+            <h1>2024 Interim Results - Investor and Analyst Presentation</h1>
+          </div>
+        </nav>
+      </header>
+      <div class="content">
+        <div class="content-holder main container">
+          <div class="left" id="video-box">
+            <div class="ext-title">
+              <span>Video</span>
+              <img
+                src="https://static.novaweb.live/146a2c5e-0b02-4e17-baef-647db231f052/3cb364c8-5de2-4e91-aa9c-169ad2c6a0cf/events/image/swap.png"
+                alt="swap"
+                class="swap"
+              />
+            </div>
+            <div class="stream-box resizable">
+              <!-- <div nova-extension="livestreaming" style="width: 100%"></div> -->
+              <video
+                id="ivs-player"
+                crossorigin="anonymous"
+                controls
+                autoplay
+                muted
+                playsinline
+              >
+                Your browser does not support the video tag.
+              </video>
+              <div id="stream-info">
+                <img
+                  style="width: 100%"
+                  src="https://static.novaweb.live/146a2c5e-0b02-4e17-baef-647db231f052/f1cbfef5-b88b-4340-bb1f-13bd773ea034/events/image/bg.video.jpg"
+                  alt="video info"
+                />
+                <div class="loading-icon">
+                  <div class="spinner"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="slides-box" class="right-ext">
+            <div class="ext-title">
+              <span>Slide</span>
+              <img
+                src="https://static.novaweb.live/146a2c5e-0b02-4e17-baef-647db231f052/3cb364c8-5de2-4e91-aa9c-169ad2c6a0cf/events/image/swap.png"
+                alt="swap"
+                class="swap"
+              />
+            </div>
+            <div id="slides" class="w-100 border-2 mh-100 resizable"></div>
+          </div>
+          <div class="resizer-x"></div>
+          <div class="right" id="bigger-screen">
+            <div id="r-top"></div>
+            <div class="r-bottom">
+              <div class="comments-top ext-title">Q&A</div>
+              <form id="submission-box">
+                <label for="question">Ask a Question:</label>
+                <div class="input-box">
+                  <textarea
+                    name="question"
+                    id="msg-box"
+                    placeholder="Enter your question here"
+                    required
+                  ></textarea>
+                  <button type="submit" id="submit">Send</button>
+                </div>
+                <div class="response-wrapper">
+                  <div class="response">
+                    Your message has been sent. Thank you.
+                  </div>
+                  <div class="response-err">
+                    Something went wrong, please try again later.
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer>
+        <div class="container">
+          <div class="text">
+            Copyright 2024 - Techtronic Industries Co. Ltd. - All rights
+            reserved
+          </div>
+          <div class="links">
+            <a
+              href="https://static.novaweb.live/Nova_v2/doc/NOVA_FAQ_EN_2023.pdf"
+              target="_blank"
+              >FAQ</a
+            >
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script src="https://static.novaweb.live/js/jquery.min.js"></script>
+
+    <script>
+      let liveStateStore = {};
+      let currentSlide = 0;
+      let timeout;
+      function updateFavicon(newFaviconUrl) {
+        var link =
+          parent.document.querySelector("link[rel*='icon']") ||
+          parent.document.createElement("link");
+        link.type = "image/x-icon";
+        link.rel = "shortcut icon";
+        link.href = newFaviconUrl;
+        parent.document.getElementsByTagName("head")[0].appendChild(link);
+      }
+
+      // Usage
+      updateFavicon(
+        "https://nova-public-access-bucket.s3.ap-southeast-1.amazonaws.com/favicon.ico"
+      );
+      (function (IVSPlayerPackage) {
+        // First, check if the browser supports the IVS player.
+        if (!IVSPlayerPackage.isPlayerSupported) {
+          console.warn("The current browser does not support the IVS player.");
+          return;
+        }
+        const PlayerState = IVSPlayerPackage.PlayerState;
+        const PlayerEventType = IVSPlayerPackage.PlayerEventType;
+        player = IVSPlayerPackage.create({
+          serviceWorker: {
+            url: "ivs-player-service-worker.js",
+          },
+        });
+        // Register the service worker
+
+        console.log("IVS Player version:", player.getVersion());
+        player.attachHTMLVideoElement(document.getElementById("ivs-player"));
+        player.setAutoplay(true);
+        // player.setMuted(true);
+        player.load("{{ivs_stream_url}}");
+        // player.setRebufferToLive(true);
+        player.play();
+
+        // Attach event listeners
+        player.addEventListener(PlayerState.PLAYING, function () {
+          console.log("Player State - PLAYING");
+          console.log("Latency: " + player.getLiveLatency());
+          // $("#stream-info").hide();
+        });
+        player.addEventListener(PlayerState.ENDED, function () {
+          console.log("Player State - ENDED");
+          // $("#stream-info").show();
+          // retrySetupStream();
+        });
+        player.addEventListener(PlayerState.READY, function () {
+          console.log("Player State - READY");
+        });
+        player.addEventListener(PlayerEventType.ERROR, function (err) {
+          console.warn("Player Event - ERROR:", err);
+          // $("#stream-info").show();
+          // retrySetupStream();
+        });
+        player.addEventListener(PlayerEventType.TEXT_METADATA_CUE, (cue) => {
+          const metadataText = cue.text;
+          const position = player.getPosition().toFixed(2);
+          const cmdData = JSON.parse(cue.text);
+          console.log("CmdData: ", cmdData);
+          if (cmdData.command && cmdData.timestamp) {
+            console.log("livestatestore:", liveStateStore);
+            let index = liveStateStore[cmdData.timestamp];
+            if (index || index == 0) {
+              updateSlide(index);
+            }
+          }
+        });
+
+        player.addEventListener(PlayerState.BUFFERING, function () {
+          console.log("Player State - BUFFERING");
+        });
+
+        player.addEventListener(PlayerEventType.REBUFFERING, function () {
+          console.log("Player State - REBUFFERING");
+          // rebuffered = true;
+        });
+      })(window.IVSPlayer);
+      window.addEventListener("ivs-slide-sync", async (e) => {
+        console.log("state", e.detail.state);
+        let pushedAt = e.detail.state.pushedAt;
+        let slideIndex = e.detail.state.slideIndex;
+        if (pushedAt) {
+          let liveState = {
+            [pushedAt]: slideIndex,
+          };
+          liveStateStore = { ...liveState, ...liveStateStore };
+        }
+      });
+      document.querySelectorAll(".swap").forEach((swap) => {
+        swap.addEventListener("click", function () {
+          const isVideoOnLeft = document
+            .querySelector("#video-box")
+            .classList.contains("left");
+          console.log("isVideoOnLeft: ", isVideoOnLeft);
+          const leftColumn_ = document.querySelector(".left");
+          const rightColumn_ = document.querySelector(".right");
+          const containerWidth_ =
+            leftColumn_.offsetWidth + rightColumn_.offsetWidth;
+          const leftRect_ = leftColumn_.getBoundingClientRect();
+          const newLeftWidth_ = leftRect_.width;
+          const newRightWidth_ = containerWidth_ - newLeftWidth_;
+          if (isVideoOnLeft) {
+            document.querySelector("#video-box").classList.remove("left");
+            document.querySelector("#video-box").classList.add("right-ext");
+            document.querySelector("#slides-box").classList.remove("right-ext");
+            document.querySelector("#slides-box").classList.add("left");
+            document.querySelector("#slides-box").style.width =
+              newLeftWidth_ + "px";
+            document.querySelector("#video-box").style.width =
+              newRightWidth_ + "px";
+          } else {
+            document.querySelector("#video-box").classList.remove("right-ext");
+            document.querySelector("#video-box").classList.add("left");
+            document.querySelector("#slides-box").classList.remove("left");
+            document.querySelector("#slides-box").classList.add("right-ext");
+            document.querySelector("#slides-box").style.width =
+              newRightWidth_ + "px";
+            document.querySelector("#video-box").style.width =
+              newLeftWidth_ + "px";
+          }
+          document.querySelector(".right").style.width = newRightWidth_ + "px";
+        });
+      });
+
+      NovaViewer.onReady().then(() => {
+        NovaViewer.SlideShow.getLiveState().then((liveStateData) => {
+          currentSlide = liveStateData.SlideShow.slideIndex;
+          NovaViewer.SlideShow.getSettings().then((res) => {
+            console.log("res::", res);
+            loadSlides(res.slides);
+          });
+        });
+      });
+
+      $("#submission-box").on("submit", function (e) {
+        e.preventDefault();
+        sendQuestion();
+      });
+
+      function loadSlides(slides) {
+        slides.forEach((slide, index) => {
+          const img = document.createElement("img");
+          img.setAttribute("src", slide.fileUrl);
+          img.setAttribute("class", "slide");
+          img.setAttribute("id", "slide-" + index);
+          if (index === currentSlide) {
+            img.classList.add("show");
+          }
+          document.querySelector("#slides").appendChild(img);
+        });
+      }
+      function updateSlide(index) {
+        document.querySelectorAll(".slide").forEach((slide) => {
+          slide.classList.remove("show");
+        });
+        document.querySelector("#slide-" + index).classList.add("show");
+      }
+      document
+        .querySelector("#msg-box")
+        .addEventListener("keydown", function (event) {
+          console.log("question::", this.value.length + 1);
+          let length = this.value.length;
+          let key = event.keyCode || event.charCode || event.which;
+          if (key == 8) {
+            length = length ? length - 1 : 0;
+          } else {
+            ++length;
+          }
+          if (length >= 250) {
+            length = 250;
+            this.value = this.value.substring(0, 249);
+          }
+        });
+
+      function sendQuestion() {
+        var question = $("#msg-box").val();
+        NovaViewer.QnA2.submit(question)
+          .then((question) => {
+            console.log("Question sent: ", question);
+            $("#msg-box").val("");
+            document.querySelectorAll(".response-wrapper div").forEach((el) => {
+              el.classList.remove("show");
+            });
+            $(".response-wrapper .response").addClass("show");
+          })
+          .catch((error) => {
+            console.log("Error sending question: ", error);
+            document.querySelectorAll(".response-wrapper div").forEach((el) => {
+              el.classList.remove("show");
+            });
+            $(".response-wrapper .response-err").addClass("show");
+          })
+          .finally(() => {
+            setTimeout(() => {
+              document
+                .querySelectorAll(".response-wrapper div")
+                .forEach((el) => {
+                  el.classList.remove("show");
+                });
+            }, 3000);
+          });
+      }
+
+      const resizer = document.querySelector(".resizer-x");
+      let leftColumn = document.querySelector(".left");
+      const rightColumn = document.querySelector(".right");
+      let rightComponent = document.querySelector(".right-ext");
+
+      let isResizing = false;
+      let initialLeftWidth;
+      let initialRightWidth;
+
+      function initResize() {
+        resizer.addEventListener("mousedown", startResize);
+        document.addEventListener("mousemove", resize);
+        document.addEventListener("mouseup", stopResize);
+      }
+
+      function startResize(e) {
+        console.log("resize");
+        isResizing = true;
+        initialLeftWidth = leftColumn.offsetWidth;
+        initialRightWidth = rightColumn.offsetWidth;
+      }
+
+      function resize(e) {
+        if (!isResizing) return;
+        leftColumn = document.querySelector(".left");
+        rightComponent = document.querySelector(".right-ext");
+        const containerWidth = leftColumn.offsetWidth + rightColumn.offsetWidth;
+        const leftRect = leftColumn.getBoundingClientRect();
+        const newLeftWidth = e.clientX - leftRect.left;
+        const newRightWidth = containerWidth - newLeftWidth;
+        console.log("new Left", newLeftWidth);
+        if (newLeftWidth > 100 && newRightWidth > 100) {
+          leftColumn.style.width = `${newLeftWidth}px`;
+          rightColumn.style.width = `${newRightWidth}px`;
+          rightComponent.style.width = `${newRightWidth}px`;
+          resizer.style.left = `${newLeftWidth}px`;
+        }
+      }
+
+      function stopResize() {
+        isResizing = false;
+      }
+
+      initResize();
+    </script>
+  </body>
+</html>
